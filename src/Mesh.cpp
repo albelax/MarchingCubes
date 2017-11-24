@@ -10,6 +10,7 @@ Mesh::Mesh()
 Mesh::Mesh( std::vector<float> _vertices )
 {
   m_vertices = _vertices;
+  m_normals = calculateFaceNormals( m_vertices );
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -230,3 +231,32 @@ void Mesh::write(std::vector<float> const & _vertices, std::vector<float>const &
 }
 //----------------------------------------------------------------------------------------------------------------------
 
+std::vector<float> Mesh::calculateFaceNormals( std::vector<float>  &_vertices )
+{
+  std::vector<float> normals;
+  normals.resize( _vertices.size() );
+  std::array<glm::vec3, 3> vertices;
+  glm::vec3 n;
+
+  for ( int i = 0; i < _vertices.size(); i += 9 ) // every face
+  {
+    for ( int j = 0; j < 3; ++j )
+    {
+      vertices[j].x = _vertices[ i + j*3 ];
+      vertices[j].y = _vertices[ ( i + j*3 ) + 1];
+      vertices[j].z = _vertices[ ( i + j*3 ) + 2];
+    }
+    n = glm::cross( vertices[0] - vertices[1], vertices[0] - vertices[2] );
+
+    for ( int j = i; j < i+9; j += 3)
+    {
+      normals[j] = n.x;
+      normals[j + 1] = n.y;
+      normals[j + 2] = n.z;
+    }
+  }
+
+  return normals;
+}
+
+//----------------------------------------------------------------------------------------------------------------------

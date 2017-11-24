@@ -228,8 +228,8 @@ std::vector<float> Polygonizer::evaluate()
     y = points[i].y;
     z = points[i].z;
 
-    values[i] = x*x + y*y + z*z - 1;
-//    values[i] = std::min(std::min( -x * x, -y * y), -z * z ) + 1;
+//    values[i] = x*x + y*y + z*z - 1;
+    values[i] = cone(x,y,z,0.5f, 1); /*std::min(std::min( -x * x, -y * y), -z * z ) + 1;*/
   }
 
   std::vector<float> p;// = this->marchingCube( points, values );
@@ -264,4 +264,12 @@ glm::vec3 Polygonizer::lerp( float _isolevel, glm::vec3 _p1, glm::vec3 _p2, floa
   p.z = _p1.z + mu * ( _p2.z - _p1.z );
 
   return(p);
+}
+
+//-------------------------------------------------------------------------------
+
+float Polygonizer::cone( float _x, float _y, float _z, float _r, float _h )
+{
+//  float y = _y - _h;
+  return std::min((_y-_h)*(_y - _h) - (_x/_r)*(_x/_r) - (_z/_r)*(_z/_r), -( _y * _y - _h ));
 }

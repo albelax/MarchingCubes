@@ -14,6 +14,7 @@ public:
   std::vector<glm::vec3> getPoints();
   std::vector<float> evaluate();
   void polygonize();
+  float cone( float _x, float _y, float _z, float _r, float _h );
 
 private:
   int m_size;

@@ -154,8 +154,7 @@ void GLWindow::renderScene()
   glUniformMatrix4fv( m_MVAddress, 1, GL_FALSE, glm::value_ptr( m_MV ) );
 
   glUniformMatrix3fv( m_NAddress, 1, GL_FALSE, glm::value_ptr( N ) );
-  glPointSize(10);
-//  glDrawArrays( GL_POINTS, 0 , ( m_amountVertexData ) );
+
   glDrawArrays( GL_TRIANGLES, 0 , ( m_amountVertexData ) );
 
 }
@@ -166,10 +165,28 @@ void GLWindow::generateNewGeometry()
 {
   // need to refactor as export
   Polygonizer p = Polygonizer();
-  std::vector<float> vertices = p.evaluate();
+  m_mesh = Mesh( p.evaluate() );
 
-  m_amountVertexData = vertices.size();
+  m_mesh.write( "pippo.obj" );
 
-  Mesh test(vertices);
-  test.write(vertices, vertices, "pippo.obj");
+  m_amountVertexData = m_mesh.getAmountVertexData();
+  // load vertices
+  glBindBuffer( GL_ARRAY_BUFFER, m_vbo );
+  glBufferData( GL_ARRAY_BUFFER, m_amountVertexData * sizeof(float), 0, GL_STATIC_DRAW );
+  glBufferSubData( GL_ARRAY_BUFFER, 0, m_mesh.getAmountVertexData() * sizeof(float), &m_mesh.getVertexData() );
+
+  // pass vertices to shader
+  GLint pos = glGetAttribLocation( m_shader.getShaderProgram(), "VertexPosition" );
+  glEnableVertexAttribArray( pos );
+  glVertexAttribPointer( pos, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+
+  // load normals
+  glBindBuffer( GL_ARRAY_BUFFER,	m_nbo );
+  glBufferData( GL_ARRAY_BUFFER, m_amountVertexData * sizeof(float), 0, GL_STATIC_DRAW );
+  glBufferSubData( GL_ARRAY_BUFFER, 0, m_mesh.getAmountVertexData() * sizeof(float), &m_mesh.getNormalsData() );
+
+  // pass normals to shader
+  GLint n = glGetAttribLocation( m_shader.getShaderProgram(), "VertexNormal" );
+  glEnableVertexAttribArray( n );
+  glVertexAttribPointer( n, 3, GL_FLOAT, GL_FALSE, 0, 0 );
 }

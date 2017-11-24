@@ -119,6 +119,8 @@ public:
 	/// \brief write exports the vertices and normals into a new obj file at the specified destination,
 	/// this overload lets the user export his own data without having to make a mesh object
 	static void write(const std::vector<float> &_vertices, const std::vector<float> &_normals, std::string _destination);
+  std::vector<float> calculateFaceNormals( std::vector<float> & _vertices );
+
 };
 
 #endif // MESH_H
