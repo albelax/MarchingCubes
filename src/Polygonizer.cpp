@@ -5,6 +5,8 @@
 #include <functional>
 #include <iostream>
 #include <math.h>
+#include <sys/time.h>
+
 
 
 Polygonizer::Polygonizer()
@@ -29,6 +31,8 @@ std::vector<glm::vec3> Polygonizer::getPoints()
 {
   glm::vec3 point;
   std::vector<glm::vec3> points;
+  points.reserve(m_size * m_size * m_size );
+
   for( int k = 0; k < m_size; ++k )
     for( int j = 0; j < m_size; ++j )
       for( int i = 0; i < m_size; ++i )
@@ -37,7 +41,7 @@ std::vector<glm::vec3> Polygonizer::getPoints()
         point.y = static_cast<float>(m_axisMin) + static_cast<float>(m_axisRange) * j / ( static_cast<float>(m_size) - 1 );
         point.z = static_cast<float>(m_axisMin) + static_cast<float>(m_axisRange) * k / ( static_cast<float>(m_size) - 1 );
 
-        points.push_back( point ); // very inefficient but it'll do for now :D
+        points.push_back( point );
       }
   return points;
 }
@@ -47,6 +51,7 @@ std::vector<glm::vec3> Polygonizer::getPoints()
 std::vector<glm::vec3> Polygonizer::marchingCube( std::vector<glm::vec3> &_points, std::vector<float> &_values )
 {
   std::vector<glm::vec3> vertices;
+  vertices.reserve( m_size * 3 );
   std::array<glm::vec3, 12> vList;
   float size = m_size * m_size;
 
@@ -104,93 +109,93 @@ std::vector<glm::vec3> Polygonizer::marchingCube( std::vector<glm::vec3> &_point
         // check which edges are crossed, and estimate the point location
         // using a weighted average of scalar values at edge endpoints.
         // store the vertex in an array for use later.
-                float mu = 0.5f;
+        float mu = 0.5f;
 
         // bottom of the cube
         if ( bits & 1 )
         {
-                    mu = ( isolevel - value[0] ) / ( value[1] - value[0] );
-                    vList[0] = glm::lerp( _points[p], _points[px], mu );
-//          vList[0] = lerp( isolevel, _points[p], _points[px], value[0], value[1] );
+          mu = ( isolevel - value[0] ) / ( value[1] - value[0] );
+          vList[0] = glm::lerp( _points[p], _points[px], mu );
+          //          vList[0] = lerp( isolevel, _points[p], _points[px], value[0], value[1] );
         }
 
         if ( bits & 2 )
         {
-                    mu = ( isolevel - value[1] ) / ( value[3] - value[1] );
-                    vList[1] = glm::lerp( _points[px], _points[pxy], mu );
-//          vList[1] = lerp( isolevel, _points[px], _points[pxy], value[1], value[2] );
+          mu = ( isolevel - value[1] ) / ( value[3] - value[1] );
+          vList[1] = glm::lerp( _points[px], _points[pxy], mu );
+          //          vList[1] = lerp( isolevel, _points[px], _points[pxy], value[1], value[2] );
         }
 
         if ( bits & 4 )
         {
-                    mu = ( isolevel - value[2] ) / ( value[3] - value[2] );
-                    vList[2] = glm::lerp( _points[py], _points[pxy], mu );
-//          vList[2] = lerp( isolevel, _points[py], _points[pxy], value[2], value[3] );
+          mu = ( isolevel - value[2] ) / ( value[3] - value[2] );
+          vList[2] = glm::lerp( _points[py], _points[pxy], mu );
+          //          vList[2] = lerp( isolevel, _points[py], _points[pxy], value[2], value[3] );
         }
 
         if ( bits & 8 )
         {
-                    mu = ( isolevel - value[0] ) / ( value[2] - value[0] );
-                    vList[3] = glm::lerp( _points[p], _points[py], mu );
-//          vList[3] = lerp( isolevel, _points[p], _points[py], value[3], value[4] );
+          mu = ( isolevel - value[0] ) / ( value[2] - value[0] );
+          vList[3] = glm::lerp( _points[p], _points[py], mu );
+          //          vList[3] = lerp( isolevel, _points[p], _points[py], value[3], value[4] );
         }
 
         // top of the cube
         if ( bits & 16 )
         {
-                    mu = ( isolevel - value[4] ) / ( value[5] - value[4] );
-                    vList[4] = glm::lerp( _points[pz], _points[pxz], mu );
-//          vList[4] = lerp( isolevel, _points[pz], _points[pxz], value[4], value[5] );
+          mu = ( isolevel - value[4] ) / ( value[5] - value[4] );
+          vList[4] = glm::lerp( _points[pz], _points[pxz], mu );
+          //          vList[4] = lerp( isolevel, _points[pz], _points[pxz], value[4], value[5] );
         }
 
         if ( bits & 32 )
         {
-                    mu = ( isolevel - value[5] ) / ( value[7] - value[5] );
-                    vList[5] = glm::lerp( _points[pxz], _points[pxyz], mu );
-//          vList[5] = lerp( isolevel, _points[pxz], _points[pxyz], value[5], value[6] );
+          mu = ( isolevel - value[5] ) / ( value[7] - value[5] );
+          vList[5] = glm::lerp( _points[pxz], _points[pxyz], mu );
+          //          vList[5] = lerp( isolevel, _points[pxz], _points[pxyz], value[5], value[6] );
         }
 
         if ( bits & 64 )
         {
-                    mu = ( isolevel - value[6] ) / ( value[7] - value[6] );
-                    vList[6] = glm::lerp( _points[pyz], _points[pxyz], mu );
-//          vList[6] = lerp( isolevel, _points[pyz], _points[pxyz], value[6], value[7] );
+          mu = ( isolevel - value[6] ) / ( value[7] - value[6] );
+          vList[6] = glm::lerp( _points[pyz], _points[pxyz], mu );
+          //          vList[6] = lerp( isolevel, _points[pyz], _points[pxyz], value[6], value[7] );
         }
 
         if ( bits & 128 )
         {
-                    mu = ( isolevel - value[4] ) / ( value[6] - value[4] );
-                    vList[7] = glm::lerp( _points[pz], _points[pyz], mu );
-//          vList[7] = lerp( isolevel, _points[pz], _points[pyz], value[7], value[4] );
+          mu = ( isolevel - value[4] ) / ( value[6] - value[4] );
+          vList[7] = glm::lerp( _points[pz], _points[pyz], mu );
+          //          vList[7] = lerp( isolevel, _points[pz], _points[pyz], value[7], value[4] );
         }
 
         // vertical lines of the cube
         if ( bits & 256 )
         {
-                    mu = ( isolevel - value[0] ) / ( value[4] - value[0] );
-                    vList[8] = glm::lerp( _points[p], _points[pz], mu );
-//          vList[8] = lerp( isolevel, _points[p], _points[pz], value[0], value[4] );
+          mu = ( isolevel - value[0] ) / ( value[4] - value[0] );
+          vList[8] = glm::lerp( _points[p], _points[pz], mu );
+          //          vList[8] = lerp( isolevel, _points[p], _points[pz], value[0], value[4] );
         }
 
         if ( bits & 512 )
         {
-                    mu = ( isolevel - value[1] ) / ( value[5] - value[1] );
-                    vList[9] = glm::lerp( _points[px], _points[pxz], mu );
-//          vList[9] = lerp( isolevel, _points[px], _points[pxz], value[1], value[5] );
+          mu = ( isolevel - value[1] ) / ( value[5] - value[1] );
+          vList[9] = glm::lerp( _points[px], _points[pxz], mu );
+          //          vList[9] = lerp( isolevel, _points[px], _points[pxz], value[1], value[5] );
         }
 
         if ( bits & 1024 )
         {
-                    mu = ( isolevel - value[3] ) / ( value[7] - value[3] );
-                    vList[10] = glm::lerp( _points[pxy], _points[pxyz], mu );
-//          vList[10] = lerp( isolevel, _points[pxy], _points[pxyz], value[2], value[6] );
+          mu = ( isolevel - value[3] ) / ( value[7] - value[3] );
+          vList[10] = glm::lerp( _points[pxy], _points[pxyz], mu );
+          //          vList[10] = lerp( isolevel, _points[pxy], _points[pxyz], value[2], value[6] );
         }
 
         if ( bits & 2048 )
         {
-                    mu = ( isolevel - value[2] ) / ( value[6] - value[2] );
-                    vList[11] = glm::lerp( _points[py], _points[pyz], mu );
-//          vList[11] = lerp( isolevel, _points[py], _points[pyz], value[3], value[7] );
+          mu = ( isolevel - value[2] ) / ( value[6] - value[2] );
+          vList[11] = glm::lerp( _points[py], _points[pyz], mu );
+          //          vList[11] = lerp( isolevel, _points[py], _points[pyz], value[3], value[7] );
         }
         int i = 0;
         cubeindex <<= 4;
@@ -210,6 +215,7 @@ std::vector<glm::vec3> Polygonizer::marchingCube( std::vector<glm::vec3> &_point
       }
     }
   }
+
   return vertices;
 }
 
@@ -220,21 +226,21 @@ std::vector<float> Polygonizer::evaluate()
   float x, y, z;
   std::vector<glm::vec3> points = this->getPoints();
   std::vector<float> values;
-  values.resize( points.size() );
+  values.reserve( points.size() );
 
-  for( int i = 0; i < points.size(); ++i )
+  for( unsigned int i = 0; i < points.size(); ++i )
   {
     x = points[i].x;
     y = points[i].y;
     z = points[i].z;
 
-//    values[i] = x*x + y*y + z*z - 1;
-    values[i] = cone(x,y,z,0.5f, 1); /*std::min(std::min( -x * x, -y * y), -z * z ) + 1;*/
+//        values[i] = x*x + y*y + z*z - 1;
+    values[i] = std::min(std::min( -x * x, -y * y), -z * z ) + 1; // cone(x,y,z,0.5f, 1);
   }
 
-  std::vector<float> p;// = this->marchingCube( points, values );
+  std::vector<float> p;
   std::vector<glm::vec3> MC = this->marchingCube( points, values );
-  std::cout << MC.size() << '\n';
+  p.reserve( MC.size() * 3 );
   for ( auto &a : MC )
   {
     p.push_back(a.x);
@@ -270,6 +276,6 @@ glm::vec3 Polygonizer::lerp( float _isolevel, glm::vec3 _p1, glm::vec3 _p2, floa
 
 float Polygonizer::cone( float _x, float _y, float _z, float _r, float _h )
 {
-//  float y = _y - _h;
+  //  float y = _y - _h;
   return std::min((_y-_h)*(_y - _h) - (_x/_r)*(_x/_r) - (_z/_r)*(_z/_r), -( _y * _y - _h ));
 }

@@ -32,7 +32,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += $$PWD/include \
                $$PWD/ui \
-               $$PWD/../glm \
+							 $$PWD/glm/ \
                $$PWD/shaders
 
 HEADERS += include/MainWindow.h \
